@@ -1,7 +1,7 @@
 #lang racket
 
-;; square a value
-(define (sq x) (* x x))
+(define (square x)
+  (* x x))
 
 ;; find the absolute value for a number using cond
 ;; section 1.1.6 
@@ -17,8 +17,7 @@
       x))
 
 ;; square roots by newtons methods
-(define (square x)
-  (* x x))
+
 
 (define (average x y)
   (/ (+ x y) 2))
@@ -80,11 +79,29 @@
         (else (+ (fib (- n 1))
                  (fib (- n 2))))))
 
+;; section 1.2.4
+;; linear process requires 0(n) steps and 0(n) space
+(define (expt b n)
+  (if (= n 0)
+      1
+      (* b (expt b (- n 1)))))
+
+;; 0(n) steps, 0(1) space
+(define (expt2 b n)
+  (expt-iter b n 1))
+
+(define (expt-iter b counter product)
+  (if (= counter 0)
+      product
+      (expt-iter b (- counter 1) (* b product))))
+
+;; fast expt
+
 
 ;; procedures as arguments
 ;; section 1.3.1
 
-(define (inc x) (+ x 1)) ;; this seems to be missing from racket
+(define (inc x) (+ x 1))
 (define (cube x) (* x x x))
 
 (define (sum term a next b)
@@ -100,6 +117,50 @@
 
 (define (sum-integers a b)
   (sum id a inc b))
+
+;; section 1.3.2
+;; using lambda to construct functions
+(define (pi-sum a b)
+  (sum (lambda (x) (/ 1.0 (* x (+ x 2)))) a (lambda (x) (+ x 4)) b))
+
+;; using let to create local variables
+
+(define (f x y)
+  (let ((a (+ 1 (* x y)))
+        (b (- 1 y)))
+    (+ (* x (square a))
+       (* y b)
+       (* a b))))
+
+;; section 1.3.3 
+
+
+(define (close-enough? x y) 
+  (< (abs (- x y)) 0.001))
+
+(define (search f neg-point po-point)
+  (let ((midpoint (average neg-point po-point)))
+    (if (close-enough? neg-point po-point)
+        midpoint
+        (let ((test-value (f midpoint)))
+          (cond ((positive? test-value)
+                 (search f neg-point midpoint))
+                ((negative? test-value)
+                 (search f midpoint po-point))
+                (else midpoint))))))
+
+
+(define (half-interval-method f a b)
+  (let ((a-value (f a))
+        (b-value (f b)))
+    (cond ((and (negative? a-value) (positive? b-value))
+           (search f a b))
+          ((and (negative? b-value) (positive? a-value))
+           (search f b a))
+          (else (error "Values are not of opposite sign" a b)))))
+
+;; approximate to pie
+(half-interval-method sin 2.0 4.0)
 
 
 
